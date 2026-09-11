@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es-UY">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presupuesto de Obra — Uruguay</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#20241F">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Presupuesto">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDEAE2;
+    --panel:#FFFFFF;
+    --line:#DAD5C9;
+    --ink:#20241F;
+    --ink-soft:#5B5F58;
+    --blue:#2C4A6E;
+    --blue-soft:#E7EDF3;
+    --orange:#D9662B;
+    --orange-soft:#FBEBE0;
+    --green:#2F5D3A;
+    --green-soft:#E7F0E8;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:96px;
+  }
+  header{
+    padding:28px 18px 18px;
+    border-bottom:3px solid var(--ink);
+  }
+  header .kicker{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.04em;
+    color:var(--orange);
+    margin-bottom:4px;
+  }
+  h1{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:34px;
+    line-height:1;
+    margin:0 0 8px;
+  }
+  header p{
+    margin:0;
+    font-size:14px;
+    color:var(--ink-soft);
+    max-width:60ch;
+    line-height:1.45;
+  }
+  main{
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  section.card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--ink);
+  }
+  section.card.labor{border-left-color:var(--blue);}
+  section.card.materials{border-left-color:var(--orange);}
+  section.card.summary{border-left-color:var(--green);}
+  .card-head{
+    padding:14px 16px 10px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .card-head h2{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0;
+  }
+  .card-head .subtotal{
+    font-size:15px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .labor .card-head .subtotal{color:var(--blue);}
+  .materials .card-head .subtotal{color:var(--orange);}
+  .card-body{padding:12px 16px 16px;}
+  .field-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    flex:1;
+  }
+  .field label{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .field input, .field select{
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:8px 9px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#FCFBF9;
+    color:var(--ink);
+    width:100%;
+  }
+  .field input:focus, .field select:focus{
+    outline:2px solid var(--blue);
+    outline-offset:-1px;
+  }
+  .row-list{display:flex;flex-direction:column;gap:8px;}
+  .item-row{
+    display:grid;
+    grid-template-columns: 1fr 52px 78px 1fr auto;
+    gap:6px;
+    align-items:end;
+    padding:8px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .item-row:last-child{border-bottom:none;}
+  .item-row .mini label{
+    font-size:10px;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:3px;
+  }
+  .item-row input{
+    width:100%;
+    font-size:13px;
+    padding:6px 7px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#FCFBF9;
+    color:var(--ink);
+  }
+  .item-row .line-total{
+    font-size:13px;
+    font-weight:600;
+    text-align:right;
+    padding-top:6px;
+    color:var(--ink);
+  }
+  .item-row .remove{
+    background:none;
+    border:none;
+    color:#B23A3A;
+    font-size:18px;
+    cursor:pointer;
+    line-height:1;
+    padding:6px 4px;
+  }
+  .add-row{
+    margin-top:10px;
+    background:none;
+    border:1.5px dashed var(--ink-soft);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:8px 12px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    width:100%;
+  }
+  .labor .add-row:hover{border-color:var(--blue);color:var(--blue);}
+  .materials .add-row:hover{border-color:var(--orange);color:var(--orange);}
+  .note{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    line-height:1.45;
+  }
+  .pct-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+  }
+  .toggle-row input{width:16px;height:16px;}
+  .toggle-row label{font-size:13px;font-weight:500;}
+  .summary-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .summary-table td{padding:6px 0;}
+  .summary-table td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;}
+  .summary-table tr.subtle td{color:var(--ink-soft);font-weight:400;}
+  .summary-table tr.total td{
+    border-top:2px solid var(--ink);
+    padding-top:12px;
+    font-size:19px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+  }
+  .summary-table tr.total td:last-child{color:var(--green);}
+  .m2{
+    margin-top:10px;
+    padding:10px 12px;
+    background:var(--green-soft);
+    font-size:13px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .m2 strong{color:var(--green);}
+  footer.sticky{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--ink);
+    color:#fff;
+    padding:12px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'Barlow Condensed',sans-serif;
+  }
+  footer.sticky .lbl{font-size:12px;letter-spacing:.03em;color:#B8BDB4;font-family:'Inter',sans-serif;}
+  footer.sticky .val{font-size:24px;font-weight:700;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">MANO DE OBRA + MATERIALES</div>
+  <h1>Presupuesto de obra</h1>
+  <p>Cargá los jornales de mano de obra y los materiales de tu obra para estimar el costo total en pesos uruguayos. Los valores precargados son de ejemplo — reemplazalos por los precios reales de tu proveedor y por el jornal vigente del laudo de la construcción (SUNCA).</p>
+</header>
+
+<main>
+
+  <section class="card">
+    <div class="card-head"><h2>Datos del proyecto</h2></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label for="proyecto">Nombre de la obra</label>
+          <input id="proyecto" type="text" placeholder="Ej: Vivienda Barrio Peñarol">
+        </div>
+        <div class="field">
+          <label for="superficie">Superficie (m²)</label>
+          <input id="superficie" type="number" min="0" step="0.1" placeholder="Ej: 90">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card labor">
+    <div class="card-head">
+      <h2>Mano de obra</h2>
+      <div class="subtotal" id="laborSubtotal">$ 0</div>
+    </div>
+    <div class="card-body">
+      <div class="row-list" id="laborRows"></div>
+      <button class="add-row" id="addLabor">+ Agregar oficio</button>
+      <p class="note">Cantidad = jornales estimados. Precio = valor del jornal por categoría (verificá el laudo SUNCA vigente).</p>
+    </div>
+  </section>
+
+  <section class="card materials">
+    <div class="card-head">
+      <h2>Materiales</h2>
+      <div class="subtotal" id="matSubtotal">$ 0</div>
+    </div>
+    <div class="card-body">
+      <div class="row-list" id="matRows"></div>
+      <button class="add-row" id="addMat">+ Agregar material</button>
+      <p class="note">Precios de referencia en pesos uruguayos por unidad — actualizalos según corralón/proveedor.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Márgenes de la obra</h2></div>
+    <div class="card-body">
+      <div class="pct-grid">
+        <div class="field">
+          <label for="gg">Gastos generales (%)</label>
+          <input id="gg" type="number" min="0" step="0.5" value="10">
+        </div>
+        <div class="field">
+          <label for="imp">Imprevistos (%)</label>
+          <input id="imp" type="number" min="0" step="0.5" value="5">
+        </div>
+        <div class="field">
+          <label for="util">Utilidad / beneficio (%)</label>
+          <input id="util" type="number" min="0" step="0.5" value="15">
+        </div>
+      </div>
+      <div class="toggle-row">
+        <input id="iva" type="checkbox">
+        <label for="iva">Aplicar IVA (22%) sobre el total</label>
+      </div>
+      <p class="note">En Uruguay, la vivienda promovida y otras obras pueden tener exoneraciones de IVA. Consultá con tu contador si tu obra aplica.</p>
+    </div>
+  </section>
+
+  <section class="card summary">
+    <div class="card-head"><h2>Resumen</h2></div>
+    <div class="card-body">
+      <table class="summary-table">
+        <tr><td>Mano de obra</td><td id="sLabor">$ 0</td></tr>
+        <tr><td>Materiales</td><td id="sMat">$ 0</td></tr>
+        <tr class="subtle"><td>Costo directo</td><td id="sDirecto">$ 0</td></tr>
+        <tr class="subtle"><td>Gastos generales</td><td id="sGG">$ 0</td></tr>
+        <tr class="subtle"><td>Imprevistos</td><td id="sImp">$ 0</td></tr>
+        <tr class="subtle"><td>Utilidad</td><td id="sUtil">$ 0</td></tr>
+        <tr class="subtle" id="ivaRow"><td>IVA (22%)</td><td id="sIva">$ 0</td></tr>
+        <tr class="total"><td>Total</td><td id="sTotal">$ 0</td></tr>
+      </table>
+      <div class="m2" id="m2Box" style="display:none;">
+        <span>Costo por m²</span>
+        <strong id="sM2">$ 0</strong>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="sticky">
+  <span class="lbl">TOTAL ESTIMADO</span>
+  <span class="val" id="footTotal">$ 0</span>
+</footer>
+
+<script>
+const fmt = new Intl.NumberFormat('es-UY', {style:'currency', currency:'UYU', maximumFractionDigits:0});
+
+let laborRows = [
+  {name:'Oficial albañil', qty:20, price:3000},
+  {name:'Ayudante', qty:20, price:2000},
+  {name:'Contratista / capataz', qty:1, price:15000},
+];
+let matRows = [
+  {name:'Cemento portland (bolsa 25kg)', unit:'bolsa', qty:60, price:350},
+  {name:'Arena gruesa', unit:'m3', qty:10, price:1800},
+  {name:'Ladrillo común', unit:'unidad', qty:3000, price:12},
+  {name:'Hierro de construcción', unit:'kg', qty:400, price:95},
+  {name:'Bloque de hormigón', unit:'unidad', qty:600, price:65},
+];
+let idc = 0;
+laborRows.forEach(r=>r.id=idc++);
+matRows.forEach(r=>r.id=idc++);
+
+function renderLabor(){
+  const cont = document.getElementById('laborRows');
+  cont.innerHTML = '';
+  laborRows.forEach(row=>{
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+      <div class="mini"><label>Oficio</label><input data-field="name" value="${row.name}"></div>
+      <div class="mini"><label>Jornales</label><input data-field="qty" type="number" min="0" value="${row.qty}"></div>
+      <div class="mini"><label>$/jornal</label><input data-field="price" type="number" min="0" value="${row.price}"></div>
+      <div class="line-total">${fmt.format(row.qty*row.price)}</div>
+      <button class="remove" title="Quitar">×</button>
+    `;
+    div.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const f = inp.dataset.field;
+        row[f] = (f==='name') ? inp.value : parseFloat(inp.value)||0;
+        recalc();
+      });
+    });
+    div.querySelector('.remove').addEventListener('click', ()=>{
+      laborRows = laborRows.filter(r=>r.id!==row.id);
+      renderLabor(); recalc();
+    });
+    cont.appendChild(div);
+  });
+}
+
+function renderMat(){
+  const cont = document.getElementById('matRows');
+  cont.innerHTML = '';
+  matRows.forEach(row=>{
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+      <div class="mini"><label>Material</label><input data-field="name" value="${row.name}"></div>
+      <div class="mini"><label>Cant.</label><input data-field="qty" type="number" min="0" value="${row.qty}"></div>
+      <div class="mini"><label>$/unidad</label><input data-field="price" type="number" min="0" value="${row.price}"></div>
+      <div class="line-total">${fmt.format(row.qty*row.price)}</div>
+      <button class="remove" title="Quitar">×</button>
+    `;
+    div.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const f = inp.dataset.field;
+        row[f] = (f==='name') ? inp.value : parseFloat(inp.value)||0;
+        recalc();
+      });
+    });
+    div.querySelector('.remove').addEventListener('click', ()=>{
+      matRows = matRows.filter(r=>r.id!==row.id);
+      renderMat(); recalc();
+    });
+    cont.appendChild(div);
+  });
+}
+
+document.getElementById('addLabor').addEventListener('click', ()=>{
+  laborRows.push({id:idc++, name:'', qty:0, price:0});
+  renderLabor(); recalc();
+});
+document.getElementById('addMat').addEventListener('click', ()=>{
+  matRows.push({id:idc++, name:'', unit:'', qty:0, price:0});
+  renderMat(); recalc();
+});
+
+['gg','imp','util','iva','superficie'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', recalc);
+});
+
+function recalc(){
+  const laborTotal = laborRows.reduce((s,r)=>s+r.qty*r.price,0);
+  const matTotal = matRows.reduce((s,r)=>s+r.qty*r.price,0);
+  const directo = laborTotal + matTotal;
+
+  const ggPct = parseFloat(document.getElementById('gg').value)||0;
+  const impPct = parseFloat(document.getElementById('imp').value)||0;
+  const utilPct = parseFloat(document.getElementById('util').value)||0;
+  const ivaOn = document.getElementById('iva').checked;
+
+  const gg = directo * ggPct/100;
+  const imp = directo * impPct/100;
+  const util = directo * utilPct/100;
+  const totalSinIva = directo + gg + imp + util;
+  const iva = ivaOn ? totalSinIva*0.22 : 0;
+  const total = totalSinIva + iva;
+
+  document.getElementById('laborSubtotal').textContent = fmt.format(laborTotal);
+  document.getElementById('matSubtotal').textContent = fmt.format(matTotal);
+  document.getElementById('sLabor').textContent = fmt.format(laborTotal);
+  document.getElementById('sMat').textContent = fmt.format(matTotal);
+  document.getElementById('sDirecto').textContent = fmt.format(directo);
+  document.getElementById('sGG').textContent = fmt.format(gg);
+  document.getElementById('sImp').textContent = fmt.format(imp);
+  document.getElementById('sUtil').textContent = fmt.format(util);
+  document.getElementById('sIva').textContent = fmt.format(iva);
+  document.getElementById('ivaRow').style.display = ivaOn ? '' : 'none';
+  document.getElementById('sTotal').textContent = fmt.format(total);
+  document.getElementById('footTotal').textContent = fmt.format(total);
+
+  const superficie = parseFloat(document.getElementById('superficie').value)||0;
+  const m2Box = document.getElementById('m2Box');
+  if(superficie>0){
+    m2Box.style.display='flex';
+    document.getElementById('sM2').textContent = fmt.format(total/superficie);
+  } else {
+    m2Box.style.display='none';
+  }
+}
+
+renderLabor();
+renderMat();
+recalc();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
